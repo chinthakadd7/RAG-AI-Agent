@@ -20,6 +20,20 @@ class QdrantStorage:
         results = self.client.search(
             collection_name=self.collection,
             query_vector=query_vector,
+            with_payload=True,
             limit=top_k
         )
+
+        contexts = []
+        sources = set()
+
+        for r in results:
+            payload = getattr(r, "payload", None) or {}
+            text =payload.get("text", "")
+            source = payload.get("source", "")
+            if text:
+                contexts.append(text)
+                sources.add(source)
+
+        return {"contexts": contexts, "sources": list(sources)}
 
